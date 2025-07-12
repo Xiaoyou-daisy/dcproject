@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package dcrpc;
+option go_package="./dcrpc";
+
+message Request {
+  string ping = 1;
+}
+
+message Response {
+  string pong = 1;
+}
+
+message SetLocalhostRequest {
+  string Name = 1;
+  double Latitude = 2;
+  double Longitude = 3;
+  string Area = 4;
+}
+message SetLocalhostResponse {
+  string Msg = 1;
+}
+message GetLocalhostRequest {
+  string Name = 1;
+
+}
+message GetLocalhostResponse {
+  string name = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+// 请求：传入两个地点名称和距离单位
+message CalcDistanceRequest {
+  string OrderCode = 1;
+  float  Amount = 2;
+  string OrderStatus = 3;
+  int64  PassengerId = 4;
+  string StartAddr = 5;
+  string EndEnd = 6;
+  int64  DriverId = 7;
+  string from_name = 15;  // 起点名称，例如 "上海"
+  string to_name   = 16;  // 终点名称，例如 "北京"
+  string unit      = 17;  // 距离单位，"m"、"km"、"mi" 等
+  string TripKey = 18;
+  string DriverKey = 19;
+
+}
+
+// 返回：两地之间的距离值
+message CalcDistanceResponse {
+  double distance = 1;   // 计算出的距离
+}
+
+message NearbyDriversRequest {
+  double latitude  = 1; // 乘客当前纬度
+  double longitude = 2; // 乘客当前经度
+  double radius    = 3; // 搜索半径
+  int32  count     = 4; // 最多返回多少个司机
+  string unit      = 5; // 距离单位，m/km/mi，默认 km
+
+
+}
+
+message Driver {
+  int64  driver_id = 1;
+  string name      = 2; // 可选：司机昵称
+  double latitude  = 3;
+  double longitude = 4;
+  double distance  = 5; // 与乘客的距离
+}
+
+message NearbyDriversResponse {
+  repeated Driver drivers = 1;
+}
+
+message AmountRequest {
+  double  Amount = 1;
+  int64  DriverId = 2;
+  string from_name = 3;  // 起点名称，例如 "上海"
+  string to_name   = 4;  // 终点名称，例如 "北京"
+  string unit      = 5;  // 距离单位，"m"、"km"、"mi" 等
+  double distance  = 6; // 与乘客的距离
+  int64 id  = 7; // 与乘客的距离
+}
+
+// 返回：两地之间的距离值
+message AmountResponse {
+  double distance = 1;   // 计算出的距离
+  double TotalAmount = 2;
+}
+
+message TotalRequest {
+  int64  DriverId = 2;
+  int64  PayStatus = 3;
+  string CreatedAt = 4;
+  string EndAt = 5;
+
+}
+message TotalResponse {
+  float Amount = 1;
+  string Msg = 2;
+}
+message ReceiveRequest {
+  int64  Id = 1;
+  int64  PickupId = 2;
+  int64  OrderId = 3;
+  int64 DriverId = 4;
+  string Status = 5;
+
+}
+message ReceiveResponse {
+  string Msg = 2;
+}
+message EndOrderRequest {
+  int64  Id = 1;
+  int64  PickupId = 2;
+  int64  OrderId = 3;
+  int64 DriverId = 4;
+  string Status = 5;
+}
+message EndOrderResponse {
+  string Msg = 2;
+}
+
+message MongoDBRequest {
+  string GeoKey = 1;             // Redis 中 GEO 的 key（例如："drivers"）
+  repeated string DriverIds = 2; // 需要同步到 MongoDB 的 driverId 列表
+}
+message MongoDBResponse {
+  int64 Updated = 1;              // 成功 upsert 的数量
+  repeated string FailedIds = 2; // 写入失败的 driverId 列表
+}
+
+
+
+message CityLocation {
+  string Name = 1;
+  double Latitude = 2;
+  double Longitude = 3;
+}
+
+message MonDBCreateRequest {
+  repeated CityLocation Cities = 1;
+}
+
+message MonDBCreateResponse {
+  int32 Inserted = 1;      // 插入成功数量
+  repeated string Failed = 2; // 插入失败的城市名称
+}
+
+service Dcrpc {
+  rpc Ping(Request) returns(Response);
+  //今日份打车所得税
+  rpc SetLocalhost(SetLocalhostRequest) returns(SetLocalhostResponse); //存入地址的经纬度
+  rpc GetLocalhost(GetLocalhostRequest) returns(GetLocalhostResponse); //获取地址经纬度
+  rpc CalcDistance(CalcDistanceRequest) returns(CalcDistanceResponse); //计算两地的距离
+  rpc NearbyDrivers(NearbyDriversRequest) returns(NearbyDriversResponse); // 查询附近的司机距离的位置
+  rpc Amount(AmountRequest) returns(AmountResponse); // 查询附近的司机距离的位置
+  rpc MongoDB(MongoDBRequest) returns(MongoDBResponse); //存入MongoDB
+
+  rpc Total(TotalRequest) returns(TotalResponse); // 查询附近的司机距离的位置
+  rpc Receive(ReceiveRequest) returns(ReceiveResponse); //司机接取订单
+  rpc EndOrder(EndOrderRequest) returns(EndOrderResponse); //结束订单
+
+
+  rpc MonDBCreate(MonDBCreateRequest) returns(MonDBCreateResponse); //MgoDB的创建
+
+
+
+}
